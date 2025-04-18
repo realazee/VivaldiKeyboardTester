@@ -317,7 +317,7 @@ VivaldiTester::VivaldiTester() {
     }
 
 
-    size_t cfgSize = offsetof(RemapCfgs, cfg) + sizeof(RemapCfg) * 41;
+    size_t cfgSize = offsetof(RemapCfgs, cfg) + sizeof(RemapCfg) * 42;
 
     if (offsetof(RemapCfgs, cfg) != 17) {
         DbgPrint("Warning: RemapCfgs prefix size is incorrect. Your settings file may not work in croskeyboard4!\n");
@@ -335,7 +335,7 @@ VivaldiTester::VivaldiTester() {
     remapCfgs->FlipSearchAndAssistantOnPixelbook = TRUE;
     remapCfgs->HasAssistantKey = RemapCfgOverrideAutoDetect;
     remapCfgs->IsNonChromeEC = RemapCfgOverrideAutoDetect;
-    remapCfgs->remappings = 41;
+    remapCfgs->remappings = 42;
 
     //Begin map vivalid keys (without Ctrl) to F# keys
 
@@ -656,6 +656,14 @@ VivaldiTester::VivaldiTester() {
     remapCfgs->cfg[40].remappedKey.Flags = 0;
     remapCfgs->cfg[40].additionalKeys[0].MakeCode = K_LALT;
     remapCfgs->cfg[40].additionalKeys[0].Flags = KEY_BREAK;
+
+    //Map Ctrl + Alt + Forward -> F12
+    remapCfgs->cfg[41].LeftCtrl = RemapCfgKeyStateEnforce;
+    remapCfgs->cfg[41].LeftAlt = RemapCfgKeyStateEnforce;
+    remapCfgs->cfg[41].originalKey.MakeCode = VIVALDI_FWD;
+    remapCfgs->cfg[41].originalKey.Flags = KEY_E0;
+    remapCfgs->cfg[41].remappedKey.MakeCode = fnKeys_set1[11]; // F12
+    remapCfgs->cfg[41].remappedKey.Flags = 0;
 
     filterExt->remapCfgs = remapCfgs;
 
@@ -1238,10 +1246,10 @@ int main()
 {
     VivaldiTester test;
 
-    KEYBOARD_INPUT_DATA testData[2];
+    KEYBOARD_INPUT_DATA testData[3];
     RtlZeroMemory(testData, sizeof(testData)); //Reset test data
 
-    /*testData[0].MakeCode = K_LCTRL;
+    testData[0].MakeCode = K_LCTRL;
     printf("Ctrl\n");
     SubmitKeys_Guarded(&test, testData, 1);
 
@@ -1377,7 +1385,46 @@ int main()
     testData[0].MakeCode = K_LCTRL;
     testData[0].Flags = KEY_BREAK;
     printf("Release Ctrl\n");
-    SubmitKeys_Guarded(&test, testData, 1);*/
+    SubmitKeys_Guarded(&test, testData, 1);
+
+    // Test Ctrl+Alt+Forward -> F12
+    printf("\nTesting Ctrl+Alt+Forward -> F12 mapping\n");
+    
+    // Press Ctrl
+    testData[0].MakeCode = K_LCTRL;
+    testData[0].Flags = 0;
+    printf("Pressing Ctrl\n");
+    SubmitKeys_Guarded(&test, testData, 1);
+
+    // Press Alt
+    testData[0].MakeCode = K_LALT;
+    testData[0].Flags = 0;
+    printf("Pressing Alt\n");
+    SubmitKeys_Guarded(&test, testData, 1);
+
+    // Press Forward
+    testData[0].MakeCode = VIVALDI_FWD;
+    testData[0].Flags = KEY_E0;
+    printf("Pressing Forward\n");
+    SubmitKeys_Guarded(&test, testData, 1);
+
+    // Release Forward
+    testData[0].MakeCode = VIVALDI_FWD;
+    testData[0].Flags = KEY_E0 | KEY_BREAK;
+    printf("Releasing Forward\n");
+    SubmitKeys_Guarded(&test, testData, 1);
+
+    // Release Alt
+    testData[0].MakeCode = K_LALT;
+    testData[0].Flags = KEY_BREAK;
+    printf("Releasing Alt\n");
+    SubmitKeys_Guarded(&test, testData, 1);
+
+    // Release Ctrl
+    testData[0].MakeCode = K_LCTRL;
+    testData[0].Flags = KEY_BREAK;
+    printf("Releasing Ctrl\n");
+    SubmitKeys_Guarded(&test, testData, 1);
 
     testData[0].MakeCode = VIVALDI_VOLUP;
     testData[0].Flags = KEY_E0;
